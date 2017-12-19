@@ -1,0 +1,14 @@
+[
+    {
+        "merged": "C:\\Users\\Zbea\\Desktop\\sdkbuild\\examples\\IMChat\\easeui\\build\\intermediates\\res\\merged\\release\\drawable-v21\\abc_btn_colored_material.xml",
+        "source": "C:\\Users\\Zbea\\.android\\build-cache\\381db81606fd4a35014dcf573ac002c9a157b0a0\\output\\res\\drawable-v21\\abc_btn_colored_material.xml"
+    },
+    {
+        "merged": "C:\\Users\\Zbea\\Desktop\\sdkbuild\\examples\\IMChat\\easeui\\build\\intermediates\\res\\merged\\release\\drawable-v21\\abc_edit_text_material.xml",
+        "source": "C:\\Users\\Zbea\\.android\\build-cache\\381db81606fd4a35014dcf573ac002c9a157b0a0\\output\\res\\drawable-v21\\abc_edit_text_material.xml"
+    },
+    {
+        "merged": "C:\\Users\\Zbea\\Desktop\\sdkbuild\\examples\\IMChat\\easeui\\build\\intermediates\\res\\merged\\release\\drawable-v21\\abc_action_bar_item_background_material.xml",
+        "source": "C:\\Users\\Zbea\\.android\\build-cache\\381db81606fd4a35014dcf573ac002c9a157b0a0\\output\\res\\drawable-v21\\abc_action_bar_item_background_material.xml"
+    }
+]
