@@ -132,7 +132,7 @@
     <string name="Introduction">简介</string>
     <string name="To_join_the_chat">加入群聊</string>
     <string name="login">登录</string>
-    <string name="user_name">用户名</string>
+    <string name="user_name">手机号</string>
     <string name="password">密码</string>
     <string name="register">注册</string>
     <string name="confirmpassword">确认密码</string>
@@ -235,7 +235,7 @@
     <string name="Failed_to_join_the_group_chat">加入群聊失败:</string>
     <string name="temporary_does_not">暂不支持大于10M的视频！</string>
     <string name="Video_footage">拍摄录像</string>
-    <string name="User_name_cannot_be_empty">用户名不能为空！</string>
+    <string name="User_name_cannot_be_empty">手机号不能为空！</string>
     <string name="Password_cannot_be_empty">密码不能为空！</string>
     <string name="please_set_the_current">设置当前用户的昵称\n用于ios离线推送时显示用户昵称</string>
     <string name="Is_landing">正在登录……</string>
@@ -256,7 +256,7 @@
     <string name="The_video_to_start">录像开始</string>
     <string name="Whether_to_send">是否发送？</string>
     <string name="Open_the_equipment_failure">打开设备失败!</string>
-    <string name="Confirm_password_cannot_be_empty">确认密码不能为空!</string>
+    <string name="Confirm_password_cannot_be_empty">验证码不能为空!</string>
     <string name="Two_input_password">两次输入的密码不一致，请重新输入!</string>
     <string name="Is_the_registered">正在注册……</string>
     <string name="Registered_successfully">注册成功</string>

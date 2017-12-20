@@ -16,12 +16,16 @@ package com.imchat.ui;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.Volley;
 import com.hyphenate.easeui.ui.EaseBaseActivity;
 import com.umeng.analytics.MobclickAgent;
 
 @SuppressLint("Registered")
 public class BaseActivity extends EaseBaseActivity {
 
+    public RequestQueue mRequestQueue;
     @Override
     protected void onCreate(Bundle arg0) {
         super.onCreate(arg0);
@@ -32,6 +36,7 @@ public class BaseActivity extends EaseBaseActivity {
         super.onResume();
         // umeng
         MobclickAgent.onResume(this);
+        mRequestQueue= Volley.newRequestQueue(this);
     }
 
     @Override

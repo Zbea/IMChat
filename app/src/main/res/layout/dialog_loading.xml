@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/custom_loading_dialog"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:orientation="vertical"
+              android:background="@drawable/dialog_loading_bg"
+              android:gravity="center"
+    >
+
+   <RelativeLayout
+        android:orientation="vertical"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:paddingLeft="8dp"
+        android:paddingTop="8dp"
+        android:paddingRight="8dp"
+        android:paddingBottom="8dp">
+
+
+        <ProgressBar
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:id="@+id/progressBar"
+            android:layout_centerInParent="true"
+            android:indeterminateDuration="800"
+            android:indeterminateDrawable="@anim/dialog_rotate_anim"/>
+
+        <TextView
+            android:id="@+id/loading_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:layout_marginTop="8dp"
+            android:text="loading"
+            android:visibility="gone"
+            android:textColor="#66000000"
+            />
+    </RelativeLayout>
+
+
+
+
+</LinearLayout>
+

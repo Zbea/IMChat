@@ -1,7 +1,7 @@
 package com.imchat.ui;
 
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -9,10 +9,13 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +23,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.easemob.redpacketui.utils.RPRedPacketUtil;
 import com.hyphenate.EMCallBack;
@@ -27,8 +33,14 @@ import com.hyphenate.EMValueCallBack;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.easeui.domain.EaseUser;
 import com.hyphenate.easeui.utils.EaseUserUtils;
+import com.imchat.Constant;
 import com.imchat.DemoHelper;
 import com.imchat.R;
+import com.imchat.db.User;
+import com.imchat.dialog.CustomLoadingDialog;
+import com.imchat.utils.CustomRequest;
+
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 
@@ -42,8 +54,29 @@ public class AccountFragment extends Fragment implements View.OnClickListener
     private static final int REQUESTCODE_CUTTING = 2;
     private ImageView headAvatar;
     private ImageView headPhotoUpdate;
+    private TextView tvNickName;
     private TextView tvUsername;
-    private ProgressDialog dialog;
+    private Dialog mDialog;
+    private User user;
+    private static final int NOTIFY_INFO=1;
+
+    private Handler mHandler=new Handler(){
+        @Override
+        public void handleMessage(Message msg)
+        {
+            if (msg.what==NOTIFY_INFO)
+            {
+                tvNickName.setText(user.nickname);
+                tvUsername.setText(user.phone);
+                if(!TextUtils.isEmpty(user.avatar)){
+                    Glide.with(getActivity()).load(user.avatar).placeholder(R.drawable.em_default_avatar).into(headAvatar);
+                }else{
+                    Glide.with(getActivity()).load(R.drawable.em_default_avatar).into(headAvatar);
+                }
+            }
+        }
+    };
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -59,10 +92,12 @@ public class AccountFragment extends Fragment implements View.OnClickListener
         headAvatar = (ImageView)getView().findViewById(R.id.user_head_avatar);
         headPhotoUpdate = (ImageView)getView().findViewById(R.id.user_head_headphoto_update);
         tvUsername = (TextView)getView().findViewById(R.id.user_username);
+        tvNickName= (TextView)getView().findViewById(R.id.user_nickname);
         getView().findViewById(R.id.ll_red).setOnClickListener(this);
         getView().findViewById(R.id.ll_set).setOnClickListener(this);
         getView().findViewById(R.id.btn_logout).setOnClickListener(this);
-        initListener() ;
+//        initListener() ;
+        FetchInfo();
     }
 
     private void initListener() {
@@ -71,10 +106,10 @@ public class AccountFragment extends Fragment implements View.OnClickListener
         headAvatar.setOnClickListener(this);
         if(username != null){
             if (username.equals(EMClient.getInstance().getCurrentUser())) {
-                tvUsername.setText(EMClient.getInstance().getCurrentUser());
+                tvNickName.setText(EMClient.getInstance().getCurrentUser());
                 EaseUserUtils.setUserAvatar(getActivity(), username, headAvatar);
             } else {
-                tvUsername.setText(username);
+                tvNickName.setText(username);
                 EaseUserUtils.setUserAvatar(getActivity(), username, headAvatar);
                 asyncFetchUserInfo(username);
             }
@@ -108,6 +143,47 @@ public class AccountFragment extends Fragment implements View.OnClickListener
 
     }
 
+    private void FetchInfo()
+    {
+        CustomRequest customRequest=new CustomRequest(getActivity(),Constant.ACCOUNT_INFO,new Response.Listener<JSONObject>()
+        {
+            @Override
+            public void onResponse(JSONObject response)
+            {
+                if(response!=null)
+                {
+                    Log.i("imchat",""+response.toString());
+                    int status=response.optInt("status");
+                    if (status == 201)
+                    {
+                        JSONObject jsonObject=response.optJSONObject("data");
+                        int id=jsonObject.optInt("id");
+                        String phone=jsonObject.optString("phone");
+                        String avater=jsonObject.optString("avater");
+                        String nick_name= jsonObject.optString("nick_name");
+
+                        user=new User();
+                        user.id=id;
+                        user.nickname=nick_name;
+                        user.phone=phone;
+                        user.avatar=avater;
+
+                        mHandler.sendEmptyMessage(NOTIFY_INFO);
+                    }
+
+                }
+            }
+        }, new Response.ErrorListener()
+        {
+            @Override
+            public void onErrorResponse(VolleyError error)
+            {
+            }
+        });
+        Volley.newRequestQueue(getActivity()).add(customRequest);
+    }
+
+
     public void asyncFetchUserInfo(String username){
         DemoHelper.getInstance().getUserProfileManager().asyncGetUserInfo(username, new EMValueCallBack<EaseUser>() {
 
@@ -134,19 +210,14 @@ public class AccountFragment extends Fragment implements View.OnClickListener
 
 
     void logout() {
-        final ProgressDialog pd = new ProgressDialog(getActivity());
-        String st = getResources().getString(R.string.Are_logged_out);
-        pd.setMessage(st);
-        pd.setCanceledOnTouchOutside(false);
-        pd.show();
+        mDialog=CustomLoadingDialog.setLoadingDialog(getActivity(),"");
         DemoHelper.getInstance().logout(true,new EMCallBack() {
 
             @Override
             public void onSuccess() {
                 getActivity().runOnUiThread(new Runnable() {
                     public void run() {
-                        pd.dismiss();
-                        // show login screen
+                        mDialog.dismiss();
                         ((MainActivity) getActivity()).finish();
                         startActivity(new Intent(getActivity(), LoginActivity.class));
 
@@ -165,8 +236,7 @@ public class AccountFragment extends Fragment implements View.OnClickListener
 
                     @Override
                     public void run() {
-                        // TODO Auto-generated method stub
-                        pd.dismiss();
+                        mDialog.dismiss();
                         Toast.makeText(getActivity(), "unbind devicetokens failed", Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -252,7 +322,7 @@ public class AccountFragment extends Fragment implements View.OnClickListener
     }
 
     private void uploadUserAvatar(final byte[] data) {
-        dialog = ProgressDialog.show(getActivity(), getString(R.string.dl_update_photo), getString(R.string.dl_waiting));
+        mDialog = CustomLoadingDialog.setLoadingDialog(getActivity(),"");
         new Thread(new Runnable() {
 
             @Override
@@ -261,7 +331,7 @@ public class AccountFragment extends Fragment implements View.OnClickListener
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        dialog.dismiss();
+                        mDialog.dismiss();
                         if (avatarUrl != null) {
                             Toast.makeText(getActivity(), getString(R.string.toast_updatephoto_success),
                                     Toast.LENGTH_SHORT).show();
@@ -276,7 +346,6 @@ public class AccountFragment extends Fragment implements View.OnClickListener
             }
         }).start();
 
-        dialog.show();
     }
 
 

@@ -27,11 +27,7 @@ import android.widget.Toast;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.hyphenate.EMError;
-import com.hyphenate.chat.EMClient;
-import com.hyphenate.exceptions.HyphenateException;
 import com.imchat.Constant;
-import com.imchat.DemoHelper;
 import com.imchat.R;
 import com.imchat.db.User;
 import com.imchat.dialog.CustomLoadingDialog;
@@ -48,7 +44,7 @@ import java.util.TimerTask;
  * register screen
  * 
  */
-public class RegisterActivity extends BaseActivity {
+public class FindPsdActivity extends BaseActivity {
 	private EditText userNameEditText;
 	private EditText passwordEditText;
 	private EditText confirmPwdEditText;
@@ -72,12 +68,7 @@ public class RegisterActivity extends BaseActivity {
 			}
 			if (msg.what==NOTIFY_REGISTER)
 			{
-//				UserManager.newInstance().onRefresh(true,user);
-//				UserUtils.saveUser(mContext,user);
-//				finish();
-
-				relevanceImChat();
-
+				finish();
 			}
 		}
 	};
@@ -86,7 +77,7 @@ public class RegisterActivity extends BaseActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.em_activity_register);
+		setContentView(R.layout.em_activity_find);
 		userNameEditText = (EditText) findViewById(R.id.username);
 		passwordEditText = (EditText) findViewById(R.id.password);
 		confirmPwdEditText = (EditText) findViewById(R.id.confirm_password);
@@ -137,7 +128,7 @@ public class RegisterActivity extends BaseActivity {
 			userNameEditText.requestFocus();
 			return;
 		}
-		CustomRequest customRequest=new CustomRequest(this, Constant.ACCOUNT_GET_CODE +"1&phone="+ username, new Response.Listener<JSONObject>()
+		CustomRequest customRequest=new CustomRequest(this, Constant.ACCOUNT_GET_CODE +"2&phone="+ username, new Response.Listener<JSONObject>()
 		{
 			@Override
 			public void onResponse(JSONObject response)
@@ -163,7 +154,7 @@ public class RegisterActivity extends BaseActivity {
 
 
 
-	public void register(View view) {
+	public void find(View view) {
 		final String username = userNameEditText.getText().toString().trim();
 		final String pwd = passwordEditText.getText().toString().trim();
 		String confirm_pwd = confirmPwdEditText.getText().toString().trim();
@@ -183,50 +174,6 @@ public class RegisterActivity extends BaseActivity {
 
 		FetchRegister(username,pwd,confirm_pwd);
 
-//		if (!TextUtils.isEmpty(username) && !TextUtils.isEmpty(pwd)) {
-//			final ProgressDialog pd = new ProgressDialog(this);
-//			pd.setMessage(getResources().getString(R.string.Is_the_registered));
-//			pd.show();
-//
-//			new Thread(new Runnable() {
-//				public void run() {
-//					try {
-//						// call method in SDK
-//						EMClient.getInstance().createAccount(username, pwd);
-//						runOnUiThread(new Runnable() {
-//							public void run() {
-//								if (!RegisterActivity.this.isFinishing())
-//									pd.dismiss();
-//								// save current user
-//								DemoHelper.getInstance().setCurrentUserName(username);
-//								Toast.makeText(getApplicationContext(), getResources().getString(R.string.Registered_successfully), Toast.LENGTH_SHORT).show();
-//								finish();
-//							}
-//						});
-//					} catch (final HyphenateException e) {
-//						runOnUiThread(new Runnable() {
-//							public void run() {
-//								if (!RegisterActivity.this.isFinishing())
-//									pd.dismiss();
-//								int errorCode=e.getErrorCode();
-//								if(errorCode==EMError.NETWORK_ERROR){
-//									Toast.makeText(getApplicationContext(), getResources().getString(R.string.network_anomalies), Toast.LENGTH_SHORT).show();
-//								}else if(errorCode == EMError.USER_ALREADY_EXIST){
-//									Toast.makeText(getApplicationContext(), getResources().getString(R.string.User_already_exists), Toast.LENGTH_SHORT).show();
-//								}else if(errorCode == EMError.USER_AUTHENTICATION_FAILED){
-//									Toast.makeText(getApplicationContext(), getResources().getString(R.string.registration_failed_without_permission), Toast.LENGTH_SHORT).show();
-//								}else if(errorCode == EMError.USER_ILLEGAL_ARGUMENT){
-//								    Toast.makeText(getApplicationContext(), getResources().getString(R.string.illegal_user_name),Toast.LENGTH_SHORT).show();
-//								}else{
-//									Toast.makeText(getApplicationContext(), getResources().getString(R.string.Registration_failed), Toast.LENGTH_SHORT).show();
-//								}
-//							}
-//						});
-//					}
-//				}
-//			}).start();
-//
-//		}
 	}
 
 
@@ -240,11 +187,13 @@ public class RegisterActivity extends BaseActivity {
 		map.put("phone",phoneStr);
 		map.put("password",passwordStr);
 		map.put("vcode",codeStr);
-		CustomRequest customRequest=new CustomRequest(this, Request.Method.POST, Constant.ACCOUNT_REGISTER, map, new Response.Listener<JSONObject>()
+		CustomRequest customRequest=new CustomRequest(this, Request.Method.POST, Constant.ACCOUNT_FIND_PSD, map, new Response.Listener<JSONObject>()
 		{
 			@Override
 			public void onResponse(JSONObject response)
 			{
+				if (mDialog!=null)
+					mDialog.dismiss();
 				if(response!=null)
 				{
 					Log.i("imchat",""+response.toString());
@@ -252,16 +201,16 @@ public class RegisterActivity extends BaseActivity {
 					String msg=response.optString("msg");
 					if (status==201)
 					{
-						JSONObject jsonObject=response.optJSONObject("data");
-						String phone=jsonObject.optString("phone");
-						String token=jsonObject.optString("token");
-						String i_username=jsonObject.optString("i_username");
-						String i_password=jsonObject.optString("i_password");
-						user=new User();
-						user.nickname=i_username;
-						user.psd=i_password;
-						user.phone=phone;
-						user.token=token;
+//						JSONObject jsonObject=response.optJSONObject("data");
+//						String phone=jsonObject.optString("phone");
+//						String token=jsonObject.optString("token");
+//						String i_username=jsonObject.optString("i_username");
+//						String i_password=jsonObject.optString("i_password");
+//						user=new User();
+//						user.nickname=i_username;
+//						user.psd=i_password;
+//						user.phone=phone;
+//						user.token=token;
 						mHandler.sendEmptyMessage(NOTIFY_REGISTER);
 					}
 					else
@@ -279,56 +228,56 @@ public class RegisterActivity extends BaseActivity {
 			{
 				if (mDialog!=null)
 					mDialog.dismiss();
-				Toast.makeText(getApplication(),"抱歉,注册失败",Toast.LENGTH_SHORT).show();
+				Toast.makeText(getApplication(),"抱歉,找回密码失败",Toast.LENGTH_SHORT).show();
 			}
 		});
 		mRequestQueue.add(customRequest);
 	}
 
 
-	/**
-	 * 关联环信
-	 */
-	private void relevanceImChat()
-	{
-		new Thread(new Runnable() {
-			public void run() {
-				try {
-					// call method in SDK
-					EMClient.getInstance().createAccount(user.nickname, user.psd);
-					runOnUiThread(new Runnable() {
-						public void run() {
-							if (!RegisterActivity.this.isFinishing())
-								mDialog.dismiss();
-							// save current user
-							DemoHelper.getInstance().setCurrentUserName(user.nickname);
-							Toast.makeText(getApplicationContext(), getResources().getString(R.string.Registered_successfully), Toast.LENGTH_SHORT).show();
-							finish();
-						}
-					});
-				} catch (final HyphenateException e) {
-					runOnUiThread(new Runnable() {
-						public void run() {
-							if (!RegisterActivity.this.isFinishing())
-								mDialog.dismiss();
-							int errorCode=e.getErrorCode();
-							if(errorCode==EMError.NETWORK_ERROR){
-								Toast.makeText(getApplicationContext(), getResources().getString(R.string.network_anomalies), Toast.LENGTH_SHORT).show();
-							}else if(errorCode == EMError.USER_ALREADY_EXIST){
-								Toast.makeText(getApplicationContext(), getResources().getString(R.string.User_already_exists), Toast.LENGTH_SHORT).show();
-							}else if(errorCode == EMError.USER_AUTHENTICATION_FAILED){
-								Toast.makeText(getApplicationContext(), getResources().getString(R.string.registration_failed_without_permission), Toast.LENGTH_SHORT).show();
-							}else if(errorCode == EMError.USER_ILLEGAL_ARGUMENT){
-								Toast.makeText(getApplicationContext(), getResources().getString(R.string.illegal_user_name),Toast.LENGTH_SHORT).show();
-							}else{
-								Toast.makeText(getApplicationContext(), getResources().getString(R.string.Registration_failed), Toast.LENGTH_SHORT).show();
-							}
-						}
-					});
-				}
-			}
-		}).start();
-	}
+//    /**
+//     * 关联环信
+//	 */
+//	private void relevanceImChat()
+//	{
+//		new Thread(new Runnable() {
+//			public void run() {
+//				try {
+//					// call method in SDK
+//					EMClient.getInstance().createAccount(user.nickname, user.psd);
+//					runOnUiThread(new Runnable() {
+//						public void run() {
+//							if (!FindPsdActivity.this.isFinishing())
+//								mDialog.dismiss();
+//							// save current user
+//							DemoHelper.getInstance().setCurrentUserName(user.nickname);
+//							Toast.makeText(getApplicationContext(), getResources().getString(R.string.Registered_successfully), Toast.LENGTH_SHORT).show();
+//							finish();
+//						}
+//					});
+//				} catch (final HyphenateException e) {
+//					runOnUiThread(new Runnable() {
+//						public void run() {
+//							if (!FindPsdActivity.this.isFinishing())
+//								mDialog.dismiss();
+//							int errorCode=e.getErrorCode();
+//							if(errorCode==EMError.NETWORK_ERROR){
+//								Toast.makeText(getApplicationContext(), getResources().getString(R.string.network_anomalies), Toast.LENGTH_SHORT).show();
+//							}else if(errorCode == EMError.USER_ALREADY_EXIST){
+//								Toast.makeText(getApplicationContext(), getResources().getString(R.string.User_already_exists), Toast.LENGTH_SHORT).show();
+//							}else if(errorCode == EMError.USER_AUTHENTICATION_FAILED){
+//								Toast.makeText(getApplicationContext(), getResources().getString(R.string.registration_failed_without_permission), Toast.LENGTH_SHORT).show();
+//							}else if(errorCode == EMError.USER_ILLEGAL_ARGUMENT){
+//								Toast.makeText(getApplicationContext(), getResources().getString(R.string.illegal_user_name),Toast.LENGTH_SHORT).show();
+//							}else{
+//								Toast.makeText(getApplicationContext(), getResources().getString(R.string.Registration_failed), Toast.LENGTH_SHORT).show();
+//							}
+//						}
+//					});
+//				}
+//			}
+//		}).start();
+//	}
 
 	public void back(View view) {
 		finish();

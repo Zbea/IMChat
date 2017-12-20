@@ -13,11 +13,11 @@
  */
 package com.imchat.ui;
 
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnCancelListener;
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -29,13 +29,27 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.hyphenate.EMCallBack;
 import com.hyphenate.chat.EMClient;
+import com.hyphenate.easeui.utils.EaseCommonUtils;
+import com.imchat.Constant;
 import com.imchat.DemoApplication;
 import com.imchat.DemoHelper;
 import com.imchat.R;
 import com.imchat.db.DemoDBManager;
-import com.hyphenate.easeui.utils.EaseCommonUtils;
+import com.imchat.db.User;
+import com.imchat.dialog.CustomLoadingDialog;
+import com.imchat.utils.CustomRequest;
+import com.imchat.utils.SharedPreferencesUtil;
+import com.imchat.utils.UserUtils;
+
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Login screen
@@ -43,12 +57,28 @@ import com.hyphenate.easeui.utils.EaseCommonUtils;
  */
 public class LoginActivity extends BaseActivity {
 	private static final String TAG = "LoginActivity";
-	public static final int REQUEST_CODE_SETNICK = 1;
+	private static final int NOTIFY_LOGIN=1;
 	private EditText usernameEditText;
 	private EditText passwordEditText;
 
-	private boolean progressShow;
+	private Dialog mDialog;
+	private User user;
 	private boolean autoLogin = false;
+
+	private Handler mHandler=new Handler()
+	{
+		@Override
+		public void handleMessage(Message msg)
+		{
+			if (msg.what==NOTIFY_LOGIN)
+			{
+				UserUtils.saveUser(getApplication(),user);
+				relevanceImChat();
+			}
+		}
+	};
+
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -98,7 +128,7 @@ public class LoginActivity extends BaseActivity {
 		});
 
 		if (DemoHelper.getInstance().getCurrentUsernName() != null) {
-			usernameEditText.setText(DemoHelper.getInstance().getCurrentUsernName());
+			usernameEditText.setText(""+ SharedPreferencesUtil.get(this,"phone",""));
 		}
 	}
 
@@ -124,54 +154,89 @@ public class LoginActivity extends BaseActivity {
 			return;
 		}
 
-		progressShow = true;
-		final ProgressDialog pd = new ProgressDialog(LoginActivity.this);
-		pd.setCanceledOnTouchOutside(false);
-		pd.setOnCancelListener(new OnCancelListener() {
+		FetchLogin(currentUsername,currentPassword);
 
+	}
+
+	/**
+	 * 登录
+	 */
+	private void FetchLogin(String phoneStr,String passwordStr)
+	{
+		mDialog= CustomLoadingDialog.setLoadingDialog(this,"");
+		final Map<String,String> map=new HashMap<>();
+		map.put("phone",phoneStr);
+		map.put("password",passwordStr);
+		CustomRequest customRequest=new CustomRequest(this, Request.Method.POST, Constant.ACCOUNT_LOGIN, map, new Response.Listener<JSONObject>()
+		{
 			@Override
-			public void onCancel(DialogInterface dialog) {
-				Log.d(TAG, "EMClient.getInstance().onCancel");
-				progressShow = false;
+			public void onResponse(JSONObject response)
+			{
+				if(response!=null)
+				{
+					Log.i("imchat",""+response.toString());
+					int status=response.optInt("status");
+					String msg=response.optString("msg");
+					if (status==201)
+					{
+						JSONObject jsonObject=response.optJSONObject("data");
+						int id=jsonObject.optInt("id");
+						String phone=jsonObject.optString("phone");
+						String token=jsonObject.optString("token");
+						String i_username=jsonObject.optString("i_username");
+						String i_password=jsonObject.optString("i_password");
+						user=new User();
+						user.id=id;
+						user.nickname=i_username;
+						user.psd=i_password;
+						user.phone=phone;
+						user.token=token;
+						mHandler.sendEmptyMessage(NOTIFY_LOGIN);
+					}
+					else
+					{
+						if (mDialog!=null)
+							mDialog.dismiss();
+						Toast.makeText(getApplication(),msg,Toast.LENGTH_SHORT).show();
+					}
+				}
+			}
+		}, new Response.ErrorListener()
+		{
+			@Override
+			public void onErrorResponse(VolleyError error)
+			{
+				if (mDialog!=null)
+					mDialog.dismiss();
+				Toast.makeText(getApplication(),"抱歉,登录失败",Toast.LENGTH_SHORT).show();
 			}
 		});
-		pd.setMessage(getString(R.string.Is_landing));
-		pd.show();
+		mRequestQueue.add(customRequest);
+	}
 
-		// After logout，the DemoDB may still be accessed due to async callback, so the DemoDB will be re-opened again.
-		// close it before login to make sure DemoDB not overlap
-        DemoDBManager.getInstance().closeDB();
+	/**
+	 * 关联环信
+	 */
+	private void relevanceImChat()
+	{
+		DemoDBManager.getInstance().closeDB();
+		DemoHelper.getInstance().setCurrentUserName(user.nickname);
 
-        // reset current user name before login
-        DemoHelper.getInstance().setCurrentUserName(currentUsername);
-        
-		final long start = System.currentTimeMillis();
-		// call login method
-		Log.d(TAG, "EMClient.getInstance().login");
-		EMClient.getInstance().login(currentUsername, currentPassword, new EMCallBack() {
+		EMClient.getInstance().login(user.nickname, user.psd, new EMCallBack() {
 
 			@Override
 			public void onSuccess() {
 				Log.d(TAG, "login: onSuccess");
-
-
-				// ** manually load all local groups and conversation
-			    EMClient.getInstance().groupManager().loadAllGroups();
-			    EMClient.getInstance().chatManager().loadAllConversations();
-
-			    // update current user's display name for APNs
+				EMClient.getInstance().groupManager().loadAllGroups();
+				EMClient.getInstance().chatManager().loadAllConversations();
 				boolean updatenick = EMClient.getInstance().pushManager().updatePushNickname(
 						DemoApplication.currentUserNick.trim());
 				if (!updatenick) {
 					Log.e("LoginActivity", "update current user nick fail");
 				}
-
-				if (!LoginActivity.this.isFinishing() && pd.isShowing()) {
-				    pd.dismiss();
-				}
 				// get user's info (this should be get from App's server or 3rd party service)
 				DemoHelper.getInstance().getUserProfileManager().asyncGetCurrentUserInfo();
-
+				mDialog.dismiss();
 				Intent intent = new Intent(LoginActivity.this,
 						MainActivity.class);
 				startActivity(intent);
@@ -186,13 +251,9 @@ public class LoginActivity extends BaseActivity {
 
 			@Override
 			public void onError(final int code, final String message) {
-				Log.d(TAG, "login: onError: " + code);
-				if (!progressShow) {
-					return;
-				}
 				runOnUiThread(new Runnable() {
 					public void run() {
-						pd.dismiss();
+						mDialog.dismiss();
 						Toast.makeText(getApplicationContext(), getString(R.string.Login_failed) + message,
 								Toast.LENGTH_SHORT).show();
 					}
@@ -200,7 +261,6 @@ public class LoginActivity extends BaseActivity {
 			}
 		});
 	}
-
 	
 	/**
 	 * register
@@ -209,6 +269,15 @@ public class LoginActivity extends BaseActivity {
 	 */
 	public void register(View view) {
 		startActivityForResult(new Intent(this, RegisterActivity.class), 0);
+	}
+
+	/**
+	 * register
+	 *
+	 * @param view
+	 */
+	public void find(View view) {
+		startActivityForResult(new Intent(this, FindPsdActivity.class), 0);
 	}
 
 	@Override

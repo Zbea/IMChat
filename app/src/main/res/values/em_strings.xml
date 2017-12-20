@@ -258,7 +258,7 @@
     <string name="The_video_to_start">The video to start</string>
     <string name="Whether_to_send">Are you sure to send?</string>
     <string name="Open_the_equipment_failure">Open the equipment failure!</string>
-    <string name="Confirm_password_cannot_be_empty">Confirm password cannot be empty!</string>
+    <string name="Confirm_password_cannot_be_empty">Code cannot be empty!</string>
     <string name="Two_input_password">Inconsistent password, please enter again!</string>
     <string name="Is_the_registered">Registering..</string>
     <string name="Registered_successfully">Registered successfully</string>

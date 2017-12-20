@@ -27,10 +27,7 @@ import com.easemob.redpacketsdk.constant.RPConstant;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.easeui.domain.EaseUser;
 import com.hyphenate.easeui.utils.EaseUserUtils;
-// ============== fabric start
-//import com.crashlytics.android.Crashlytics;
-//import io.fabric.sdk.android.Fabric;
-// ============== fabric end
+
 
 public class DemoApplication extends Application {
 

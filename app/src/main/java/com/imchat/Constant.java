@@ -16,6 +16,14 @@ package com.imchat;
 import com.hyphenate.easeui.EaseConstant;
 
 public class Constant extends EaseConstant{
+
+	private static String BASE_URL="http://121.42.164.143:3000";
+	public static final String ACCOUNT_GET_CODE=BASE_URL+"/api/users/get_vcode?send_type=";
+	public static final String ACCOUNT_REGISTER=BASE_URL+"/api/users/register?";
+	public static final String ACCOUNT_FIND_PSD=BASE_URL+"/api/users/ret_password?";
+	public static final String ACCOUNT_LOGIN=BASE_URL+"/api/users/login?";
+	public static final String ACCOUNT_INFO=BASE_URL+"/api/my/show";
+
 	public static final String NEW_FRIENDS_USERNAME = "item_new_friends";
 	public static final String GROUP_USERNAME = "item_groups";
 	public static final String CHAT_ROOM = "item_chatroom";
