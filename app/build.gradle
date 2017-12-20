@@ -22,11 +22,12 @@ android {
 dependencies {
     compile project(':redpacketlibrary')
     compile project(':easeui')
-    compile fileTree(dir: 'libs', include: '*.jar')
+    compile fileTree(include: '*.jar', dir: 'libs')
     compile 'com.parse:parse-android:1.13.1'
     compile 'com.android.support:multidex:1.0.1'
     compile 'com.mcxiaoke.volley:library:1.0.+@aar'
     // Google firebase cloud messaging
     compile 'com.google.firebase:firebase-messaging:11.4.0'
+    compile files('libs/httpmime-4.1.jar')
 }
 apply plugin: 'com.google.gms.google-services'

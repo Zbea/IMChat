@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="45dip"
-    android:layout_height="match_parent"
+    android:layout_width="45dp"
+    android:layout_height="@dimen/height_top_bar"
     android:background="@drawable/ease_common_tab_bg"
     android:clickable="true"
     android:onClick="back" >
@@ -11,7 +11,9 @@
         android:layout_height="40dp"
         android:layout_gravity="center_vertical"
         android:scaleType="centerInside"
-        android:padding="10dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:paddingLeft="5dp"
         android:src="@drawable/ease_mm_title_back" />
 
 </LinearLayout>
